@@ -3,7 +3,8 @@ name: Construir JARVIS AI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -22,6 +23,8 @@ jobs:
 
       - name: Configurar Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Instalar herramientas Android
         run: |
@@ -41,3 +44,4 @@ jobs:
         with:
           name: JARVIS-AI-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+
