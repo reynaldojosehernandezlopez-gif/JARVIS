@@ -12,36 +12,45 @@ permissions:
 
 jobs:
   build:
-    name: Compilar aplicación Android
+    name: Compilar JARVIS
     runs-on: ubuntu-latest
 
     steps:
       - name: Descargar proyecto
         uses: actions/checkout@v4
 
-      - name: Configurar Java 17
+      - name: Configurar Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Instalar SDK Android 35
+      - name: Comprobar Android SDK
         run: |
-          sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
-          yes | sdkmanager --licenses
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
+          command -v sdkmanager || true
+          ls -la "$ANDROID_HOME"
 
-      - name: Configurar Gradle 8.9
+      - name: Instalar componentes Android
+        run: |
+          SDKMANAGER="$(command -v sdkmanager || find "$ANDROID_HOME" -type f -name sdkmanager | head -n 1)"
+          if [ -z "$SDKMANAGER" ]; then
+            echo "No se encontró sdkmanager"
+            exit 1
+          fi
+          yes | "$SDKMANAGER" --licenses || true
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Configurar Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Compilar JARVIS
+      - name: Compilar APK
         run: gradle assembleDebug --stacktrace
 
-      - name: Publicar APK
+      - name: Guardar APK
         uses: actions/upload-artifact@v4
         with:
           name: JARVIS-AI-APK
